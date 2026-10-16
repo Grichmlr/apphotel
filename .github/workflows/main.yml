@@ -9,14 +9,12 @@ name: Build Waiter and Kitchen APKs
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     strategy:
       fail-fast: false
       matrix:
-        app:
-          - Waiter
-          - Kitchen
+        app: [Waiter, Kitchen]
 
     steps:
       - name: Checkout repository
@@ -28,16 +26,18 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          packages: |
-            platform-tools
-            platforms;android-35
-            build-tools;35.0.0
+      - name: Locate Android SDK
+        shell: bash
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+          ls -la "$ANDROID_HOME"
+          ls -la "$ANDROID_HOME/platforms" || true
+          ls -la "$ANDROID_HOME/build-tools" || true
 
       - name: Build Android APK
         working-directory: ${{ matrix.app }}
+        shell: bash
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
