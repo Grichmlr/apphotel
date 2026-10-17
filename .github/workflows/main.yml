@@ -1,4 +1,4 @@
-name: Build Waiter and Kitchen APKs
+name: Build Kitchen KOT APK
 
 'on':
   workflow_dispatch:
@@ -9,20 +9,15 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  kitchen:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
-    strategy:
-      fail-fast: false
-      matrix:
-        app: [Waiter, Kitchen]
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Extract Android projects
+      - uses: actions/checkout@v4
+      - name: Extract Kitchen source
         run: |
-          unzip -q restaurantpos-android-source.zip 'Waiter/*' 'Kitchen/*' -d android-source
-          test -f android-source/${{ matrix.app }}/app/build.gradle
+          unzip -q kitchen-kot-voice-source.zip 'Kitchen/*' -d android-source
+          test -f android-source/Kitchen/app/build.gradle
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
@@ -32,12 +27,12 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
-      - name: Build Android APK
-        working-directory: android-source/${{ matrix.app }}
+      - name: Build Kitchen APK
+        working-directory: android-source/Kitchen
         run: gradle assembleDebug --no-daemon --stacktrace
-      - name: Upload APK
+      - name: Upload Kitchen APK
         uses: actions/upload-artifact@v4
         with:
-          name: RestaurantPOS-${{ matrix.app }}
-          path: android-source/${{ matrix.app }}/app/build/outputs/apk/debug/*.apk
+          name: RestaurantPOS-Kitchen-KOT-Voice
+          path: android-source/Kitchen/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
