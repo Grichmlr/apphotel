@@ -1,4 +1,4 @@
-name: Build Kitchen KOT APK
+name: Build TableFlow Waiter and Kitchen APKs
 
 'on':
   workflow_dispatch:
@@ -9,15 +9,19 @@ permissions:
   contents: read
 
 jobs:
-  kitchen:
+  build:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [Waiter, Kitchen]
     steps:
       - uses: actions/checkout@v4
-      - name: Extract Kitchen source
+      - name: Extract latest TableFlow v2.4 source
         run: |
-          unzip -q kitchen-kot-voice-source.zip 'Kitchen/*' -d android-source
-          test -f android-source/Kitchen/app/build.gradle
+          unzip -q restaurantpos-android-source.zip -d android-source
+          test -f android-source/TableFlow-Android-v2.4/${{ matrix.app }}/app/build.gradle
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
@@ -27,12 +31,12 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
-      - name: Build Kitchen APK
-        working-directory: android-source/Kitchen
+      - name: Build TableFlow APK
+        working-directory: android-source/TableFlow-Android-v2.4/${{ matrix.app }}
         run: gradle assembleDebug --no-daemon --stacktrace
-      - name: Upload Kitchen APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: RestaurantPOS-Kitchen-KOT-Voice
-          path: android-source/Kitchen/app/build/outputs/apk/debug/*.apk
+          name: TableFlow-${{ matrix.app }}-v2.4
+          path: android-source/TableFlow-Android-v2.4/${{ matrix.app }}/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
